@@ -9,11 +9,6 @@
 int main(int argc, char *argv[]) {
     char path[4096];
 
-    if (argc < 2) {
-        fprintf(stderr, "Usage: %s <search_word> [directory]\n", argv[0]);
-        return EXIT_FAILURE;
-    }
-
     const char *word = argv[1];
 
     if (argc >= 3) {
