@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <limits.h>
 #include "file_utils.h"
 
@@ -20,6 +21,10 @@ int is_text_file(const char *filename) {
     return ext && strcmp(ext, ".txt") == 0;
 }
 
+int is_word_match(const char *token, const char *word) {
+    return strcmp(token, word) == 0;
+}
+
 void search_in_file(const char *filepath, const char *word) {
     FILE *file = fopen(filepath, "r");
     if (!file) {
@@ -27,15 +32,29 @@ void search_in_file(const char *filepath, const char *word) {
         return;
     }
 
-    char line[MAX_LINE_LENGTH];
+    char *line = NULL;
+    size_t len = 0;
+    ssize_t read;
     int line_number = 0;
 
-    while (fgets(line, sizeof(line), file)) {
+    while ((read = getline(&line, &len, file)) != -1) {
         line_number++;
-        if (strstr(line, word)) {
-            printf("%s:%d: %s", filepath, line_number, line);
+
+        char *line_copy = strdup(line);
+
+        char *token = strtok(line_copy, " \t\r\n.,");
+
+        while (token) {
+            if (is_word_match(token, word)) {
+                printf("%s:%d: %s", filepath, line_number, line);
+                break;
+            }
+            token = strtok(NULL, " \t\r\n.,");
         }
+
+        free(line_copy);
     }
 
+    free(line);
     fclose(file);
 }
